@@ -62,11 +62,17 @@ public class Player extends piedpipers.sim.Player {
 		for (int r = 0; r < nrats; r++)
 		{
 			distances[r] = dimension;
-			for(int p = 0; p < npipers; p++)
+			if(getSide(rats[r]) == 0)
+				distances[r] = 0;
+			else
 			{
-				distances[r] = Math.min(distance(pipers[p], rats[r]), distances[r]);
+				for(int p = 0; p < npipers; p++)
+				{
+					distances[r] = Math.min(distance(pipers[p], rats[r]), distances[r]);
 
+				}
 			}
+			
 		}
 		
 		boolean all_rats_m = true;
