@@ -21,6 +21,9 @@ public class Player extends piedpipers.sim.Player {
 
         //Represent y-coord of bottom and top of quadrant
         static double quadBottom, quadTop;
+
+        //Current location of piper
+        static Point current;
 	
 	public void init() {
 		thetas = new int[npipers];
@@ -44,7 +47,7 @@ public class Player extends piedpipers.sim.Player {
                   quadBottom = dimension / npipers * id;
                   this.init();initi = true;
 		}
-		Point current = pipers[id];
+		current = pipers[id];
 		double ox = 0, oy = 0;
                 //Go to fence from left side of field
 		if (getSide(current) == 0 && droppedOff) {
@@ -58,7 +61,7 @@ public class Player extends piedpipers.sim.Player {
                   System.out.println("moving to quadrant");
 		}
                 //Sweep quadrant
-                else if (withinQuadrant(current) && freeRatsInQuadrant(rats,current)){
+                else if (withinQuadrant(current) && freeRatsInQuadrant(rats)){
                   droppedOff = false;
                   this.music = true;
                   target = getAverageRatCoord(rats);
@@ -101,7 +104,7 @@ public class Player extends piedpipers.sim.Player {
           double ysum = 0.0;
           int ratcount = 0;
           for (Point rat : rats){
-            if (withinQuadrant(rat)){
+            if (withinQuadrant(rat) && !canHearMusic(rat)){
               xsum += rat.x;
               ysum += rat.y;
               ratcount++;
@@ -111,16 +114,22 @@ public class Player extends piedpipers.sim.Player {
 
         }
         //Check if a rat is in our quadrant (and not under our spell)
-        boolean freeRatsInQuadrant(Point[] rats, Point current){
+        boolean freeRatsInQuadrant(Point[] rats){
           for (Point rat : rats){
             if (withinQuadrant(rat) && distance(current,rat) > WALK_DIST)
               return true;
           }
           return false;
         }
-        //Check if Piper is inside his quadrant
-        boolean withinQuadrant(Point current){
-          if (current.x > dimension/2 && current.y < quadTop && current.y > quadBottom)
+        //Check if given point is inside this piper's quadrant
+        boolean withinQuadrant(Point spot){
+          if (spot.x > dimension/2 && spot.y < quadTop && spot.y > quadBottom)
+            return true;
+          return false;
+        }
+        //Check if rat is within Piper's 10m radius
+        boolean canHearMusic(Point rat){
+          if (distance (current,rat) < WALK_DIST)
             return true;
           return false;
         }
