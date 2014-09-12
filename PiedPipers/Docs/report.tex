@@ -1,0 +1,79 @@
+\documentclass{article}
+
+\usepackage[margin=1in]{geometry}
+
+\newcommand{\figref}[1]{Figure~\ref{fig:#1}}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+  \vspace*{1cm}
+
+  \Huge
+    \textbf{Parallel Pied Pipers}
+
+  \vspace{0.5cm}
+  \LARGE
+    Programming and Problem Solving, Project 1
+
+    \vspace{1.5cm}
+
+  \textbf{Richard Townsend\\ Gil Feig\\ Guarav Ahuja}
+
+  \vfill
+    
+    September 29, 2014
+    \vspace{0.8cm}
+
+
+
+\end{center}
+\end{titlepage}
+
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+%Provide overview of this document (and the course?)
+
+\section{Problem Description}
+%Restate problem concisely and clearly
+
+\section{Strategies}
+
+\subsection{Zone Sweeping}
+
+The first strategy we employed was divide-and-conquer in nature, and combined a few key insights
+mentioned in class. In this 'zone sweeping' technique, we evenly divide the right side of the field into
+$d$ rectangular zones and each piper is assigned to a zone by matching a piper's id with the location
+of the zone (the top-most zone is assinged to piper 0, the lowest zone to piper $d-1$). (SEE FIGURE OF ZONES)
+Every piper runs to the middle of their zone and positions himself 10m from the rightmost fence.
+Upon reaching this location, a piper enters a 'collection' state and starts playing music. While in the
+collection state, a piper takes the average of both the x- and y-coordinate of every rat in that piper's
+zone. This calculation omits any rats already under that piper's spell. This average rat coordinate becomes
+the target location for the piper to reach. We recalculate this target on every tick until all the rats
+in a piper's zone are under his influence. Once a piper's zone is clear, he runs back to the gate and moves
+10m into the left side of the field before releasing all the captured rats so far. The piper then returns to
+the far right edge of his zone and repeats the process.
+
+\subsection{Conveyor Belt}
+
+\section{Analysis}
+
+\section{Conclusions}
+%Discuss future improvements that could be made.
+%Remark on how this problem made us think.
+
+
+\newpage
+
+\bibliographystyle{abbrvnat}
+
+% The bibliography should be embedded for final submission.
+\bibliography{sedwards}
+
+\end{document}
