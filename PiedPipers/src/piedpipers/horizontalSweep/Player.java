@@ -1,7 +1,6 @@
 package piedpipers.horizontalSweep;
 
 import java.util.*;
-
 import piedpipers.sim.Point;
 
 public class Player extends piedpipers.sim.Player {
@@ -13,7 +12,6 @@ public class Player extends piedpipers.sim.Player {
 	static double mpspeed = 0.09;
 	
 	static Point target = new Point();
-	static int[] thetas;
 	static boolean finishround = true;
 	static boolean initi = false;
 	
@@ -22,7 +20,7 @@ public class Player extends piedpipers.sim.Player {
 	static double yb;
 	static double yt;
 	static double quadrant_height = 0;
-	static int state = 0;
+	static int current_state = 0;
 	static boolean check_for_rats = false;
 	
 	static Point destination = new Point();
@@ -32,8 +30,7 @@ public class Player extends piedpipers.sim.Player {
 
 	}
 
-	public void init_all() {
-		thetas = new int[npipers];
+	public void init_me() {
 		quadrant_height = dimension/npipers;
 
 	    xl = dimension/2 + PIPER_INFLUENCE;
@@ -41,23 +38,22 @@ public class Player extends piedpipers.sim.Player {
 	    yt = quadrant_height*id + quadrant_height/2;
 	    yb = quadrant_height*id + quadrant_height - PIPER_INFLUENCE;
 
+	    current_state = 0;
+	    this.music = false;
 	    destination.x = dimension/2;
 	    destination.y = dimension/2;
 
-	    System.out.println("Intializing");
-	    System.out.println("Dimension: " + dimension);
+	    System.out.printf("Intializing Piper: %d\n", id);
 	    System.out.println("Quadrant Height: " + quadrant_height);	
 	    System.out.printf("(xl=%f, yt=%f)->(xr=%f, yb=%f)\n", xl, yt, xr, yb);
-	    System.out.printf("Destination: (%f, %f)\n", destination.x, destination.y);
 	}
 
 	static double distance(Point a, Point b) {
 		return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 	}
 
-	public void check_rats(Point[] pipers, Point[] rats)
+	public boolean all_rats_mesmerized(Point[] pipers, Point[] rats)
 	{
-		System.out.printf("Piper: %d, check_rats, state: %d\n", id, state);
 		double [] distances = new double[nrats];
 		for (int r = 0; r < nrats; r++)
 		{
@@ -84,101 +80,128 @@ public class Player extends piedpipers.sim.Player {
 				break;
 			}
 		}
+
 		if (all_rats_m)
+			return true;
+		else
+			return false;
+	}
+	
+	public int get_new_state()
+	{
+		int new_state = -1;
+		switch(current_state)
 		{
-			state = 3;
+			case 0:
+				new_state = 1;
+				break;
+			case 1:
+				new_state = 2;
+				break;
+			case 2:
+				new_state = 1;					
+				break;
+			case 3:
+				new_state = 4;
+				break;
+			case 4:
+				new_state = 0;
+				break;
 		}
-		System.out.printf("Piper: %d, check_rats end, state: %d\n", id, state);
+		return new_state;
 	}
 
-	public Point move(Point[] pipers, Point[] rats) {
-		npipers = pipers.length;
-		nrats = rats.length;
-		System.out.println("Piper: " + id + " Init?: " + initi);
-		Point gate = new Point(dimension/2, dimension/2);
-		Point current = pipers[id];
-		double ox = 0, oy = 0;
-
-		if (!initi) {
-			this.init_all();
-			initi = true;
-		}
-		double dist = distance(current, destination);
-
-
-		System.out.printf("Piper: %d, (xl=%f, yt=%f)->(xr=%f, yb=%f)\n", id, xl, yt, xr, yb);
-		System.out.printf("Piper: %d, State: %d\n", id, state);
-		System.out.printf("Piper: %d, Current: (%f, %f)\n", id, current.x, current.y);
-		System.out.printf("Piper: %d, Destination: (%f, %f)\n", id, destination.x, destination.y);
-		System.out.printf("Piper: %d, Dist: %f\n", id, dist);
-
-		if (dist > 0.5)
+	public void apply_new_state(int new_state)
+	{
+		switch(new_state)
 		{
-			double speed = 0;
-			if (this.music == false)
-			{
-				speed = pspeed;
-				
-			}
-			else
-			{
-				speed = mpspeed;
-			}
+			case 0:
+				destination.x = dimension/2;
+				destination.y = dimension/2;
+				music = false;
+				break;
+			case 1:
+				destination.x = xr;
+				destination.y = yt;
+				break;
+			case 2:
+				destination.x = xl;
+				destination.y = yt;
+				music = true;
+				check_for_rats = true;
+				break;
+			case 3:
+				destination.x = dimension/2;
+				destination.y = dimension/2;
+				check_for_rats = false;
+				break;
+			case 4:
+				destination.x = dimension/2 - 5;
+				destination.y = dimension/2;
+				break;
+		}
+		current_state = new_state;
+	}
 
-			ox = (destination.x - current.x)/dist * speed;
-			oy = (destination.y - current.y)/dist * speed;	
+	public Point calc_offset(Point c, Point d)
+	{
+		double dist = distance(c, d);
+		double speed = 0;
+		Point offset = new Point();
+		if (music == false)
+		{
+			speed = pspeed;	
 		}
 		else
 		{
-			System.out.printf("Piper: %d, State Space Change, Old State: %d, Old Destination: (%f, %f), check_rats: %b\n", id, state, destination.x, destination.y, check_for_rats);
-			switch(state)
-			{
-				case 0:
-					this.music = false;
-					check_for_rats = false;
-					destination.x = xr;
-					destination.y = yt;
-					state += 1;
-					break;
-				case 1:
-					this.music = true;
-					destination.x = xl;
-					destination.y = yt;
-					state += 1;
-					if(check_for_rats)
-					{
-						check_rats(pipers, rats);
-					}
-					break;
-				case 2:
-					this.music = true;
-					check_for_rats = true;
-					destination.x = xr;
-					destination.y = yt;
-					state -= 1;
-					if(check_for_rats)
-					{
-						check_rats(pipers, rats);
-					}
-					break;
-				case 3:
-					this.music = true;
-					check_for_rats = false;
-					destination.x = dimension/2;
-					destination.y = dimension/2;
-					state = 4;
-					break;
-				case 4:
-					this.music = true;
-					destination.x = 0;
-					destination.y = dimension/2;
-					state = 0;
-			}
-			System.out.printf("Piper: %d, State Space Change, New State: %d, New Destination: (%f, %f), check_rats: %b\n", id, state, destination.x, destination.y, check_for_rats);
+			speed = mpspeed;
 		}
-		current.x += ox;
-		current.y += oy;
-		return current;
+
+		offset.x = (d.x - c.x)/dist * speed;
+		offset.y = (d.y - c.y)/dist * speed;
+		return offset;
+	}
+
+	public Point move(Point[] pipers, Point[] rats) {
+		
+		npipers = pipers.length;
+		nrats = rats.length;
+		if (!initi) {
+			this.init_me();
+			initi = true;
+		}
+		
+		Point current = pipers[id];
+		double dist = distance(current, destination);
+
+		System.out.printf("[WHEREABOUT] Piper: %d, State: %d, Current: (%f, %f), Destination:(%f, %f), Dist: %f\n",
+			id,
+			current_state,
+			current.x, current.y,
+			destination.x, destination.y,
+			dist
+			);
+		
+		Point o;
+		if (dist > 0.5)
+		{
+			o = calc_offset(current, destination);			
+		}
+		else
+		{
+			int new_state = get_new_state();
+			apply_new_state(new_state);
+			o = calc_offset(current, destination);
+		}
+		if (check_for_rats && all_rats_mesmerized(pipers, rats))
+		{
+			apply_new_state(3);
+			o = calc_offset(current, destination);
+		}
+		current.x += o.x;
+		current.y += o.y;
+		return current;	
+
 	}
 	boolean closetoWall (Point current) {
 		boolean wall = false;
