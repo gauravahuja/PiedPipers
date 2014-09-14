@@ -50,7 +50,7 @@ public class Piedpipers {
 	static double OPEN_LEFT; // left side of center opening
 	static double OPEN_RIGHT; // right side of center opening
 
-	static int MAX_TICKS = 10000;
+	static int MAX_TICKS = 100000;
 	static int seed;
 	static Random random;
 	static int[] thetas;
@@ -199,6 +199,7 @@ public class Piedpipers {
 		JButton next;
 		JButton next10;
 		JButton next50;
+		JButton play;
 		JLabel label;
 
 		public PiedPipersUI() {
@@ -227,6 +228,7 @@ public class Piedpipers {
 				return false;
 			} else {
 				playStep();
+				label.setText("Ticks: " + tick);
 				return true;
 			}
 		}
@@ -240,10 +242,23 @@ public class Piedpipers {
 				steps = 10;
 			else if (e.getSource() == next50)
 				steps = 50;
+			else if (e.getSource() == play)
+			{
+				steps = MAX_TICKS/10;
+				play.setEnabled(false);
+			}
 
 			for (int i = 0; i < steps; ++i) {
+				if (i%500 == 0)
+				{
+					paintImmediately(getBounds());				
+				}
 				if (!performOnce())
 					break;
+			}
+			if(e.getSource() == play)
+			{
+				play.setEnabled(true);
 			}
 
 			repaint();
@@ -263,9 +278,12 @@ public class Piedpipers {
 			next50 = new JButton("Next50");
 			next50.addActionListener(this);
 			next50.setBounds(200, 0, 100, 50);
+			play = new JButton("Play");
+			play.addActionListener(this);
+			play.setBounds(300, 0, 100, 50);
 
 			label = new JLabel();
-			label.setVisible(false);
+			label.setVisible(true);
 			label.setBounds(0, 60, 200, 50);
 			label.setFont(new Font("Arial", Font.PLAIN, 15));
 
@@ -276,6 +294,7 @@ public class Piedpipers {
 			this.add(next50);
 			this.add(label);
 			this.add(field);
+			this.add(play);
 
 			f.add(this);
 
@@ -590,6 +609,7 @@ public class Piedpipers {
 		tick++;
 
 		// move the player dogs
+		System.out.printf("[TICKS]: %d\n", tick);
 		Point[] next = new Point[npipers];
 		for (int d = 0; d < npipers; ++d) {
 			Point[] pipercopy = copyPointArray(pipers);
