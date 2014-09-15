@@ -141,7 +141,7 @@ public class Player extends piedpipers.sim.Player {
 	
 	private boolean bothChildrenArrived(int id)
 	{
-		return ((distance(pipers[id], pipers[id * 2]) < 1) && (distance(pipers[id], pipers[(id * 2) + 1]) < 1));
+		return ((distance(pipers[id], pipers[id * 2]) < 1.5) && (distance(pipers[id], pipers[(id * 2) + 1]) < 1.5));
 	}
 
 	public Point calc_offset(Point c, Point d)
