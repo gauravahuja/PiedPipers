@@ -10,6 +10,7 @@ public class Player extends piedpipers.sim.Player {
 
 	static double pspeed = 0.49;
 	static double mpspeed = 0.09;
+	static boolean start_belt = false;
 
 	static Point target = new Point();
 	static boolean finishround = true;
@@ -63,7 +64,7 @@ public class Player extends piedpipers.sim.Player {
 				break;
 			case 2:
 				// Waiting at home location
-				if (leafNode(id) || bothChildrenArrived(id)) {
+				if (start_belt && (leafNode(id) || bothChildrenArrived(id))) {
 					new_state = 3;
 				} else {
 					new_state = 2;
@@ -72,9 +73,11 @@ public class Player extends piedpipers.sim.Player {
 			case 3:
 				// Moving to parent
 				if (distance(homeLocation(id / 2), pipers[id / 2]) > 0.5 || id == 1)
+					//Wait until parent starts to leave, although this condition does not test leaving!
 					new_state = 1;
 				else
 					new_state = 3;
+				new_state=1;
 				break;
 				
 			case -10:
@@ -138,37 +141,7 @@ public class Player extends piedpipers.sim.Player {
 	
 	private boolean bothChildrenArrived(int id)
 	{
-		return ((distance(pipers[id], pipers[id * 2]) < 0.5) && (distance(pipers[id], pipers[(id * 2) + 1]) < 0.5));
-	}
-
-	public Point get_destination(int angle)
-	{
-		if (angle == 0)
-			angle = 1;
-		if (angle == 180)
-			angle = 179;
-		double x, y;
-		if (angle>=45 && angle <= 135)
-		{
-			y = dimension/2 * (1 - Math.tan((angle - 90)*Math.PI/180));
-			x = dimension;
-		}
-		else
-		{
-			if(angle > 135)
-			{
-				y = 0;
-				angle = 180-angle;
-			}
-			else
-				y = dimension;
-
-			x = dimension/2 *(1+Math.tan(angle*Math.PI/180));
-		}
-
-		return new Point(x, y);
-
-
+		return ((distance(pipers[id], pipers[id * 2]) < 1) && (distance(pipers[id], pipers[(id * 2) + 1]) < 1));
 	}
 
 	public Point calc_offset(Point c, Point d)
@@ -188,6 +161,24 @@ public class Player extends piedpipers.sim.Player {
 		offset.x = (d.x - c.x)/dist * speed;
 		offset.y = (d.y - c.y)/dist * speed;
 		return offset;
+	}
+
+	public boolean all_at_home(Point[] pipers)
+	{
+		boolean all_at_home = true;
+		int i = 1;
+		for (; i < npipers; i++)
+		{
+			if (distance(pipers[i], homeLocation(i)) > 0.5)
+			{
+				System.out.printf("[ALL_AT_HOME] Piper: %d not at home\n", i);
+				all_at_home = false;
+				break;
+			}
+		}
+		if (i==npipers)
+			System.out.printf("[ALL_AT_HOME] All Pipers at home\n");
+		return all_at_home;
 	}
 
 	public Point move(Point[] pipers, Point[] rats) {
@@ -211,6 +202,14 @@ public class Player extends piedpipers.sim.Player {
 					destination.x, destination.y,
 					dist
 					);
+		if (!start_belt)
+		{
+			if(all_at_home(pipers))
+			{
+				start_belt = true;
+				System.out.printf("Starting Belt\n");
+			}
+		}
 				
 		if (dist <= 0.5)
 		{
