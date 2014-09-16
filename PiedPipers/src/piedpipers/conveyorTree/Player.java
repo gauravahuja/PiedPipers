@@ -181,7 +181,7 @@ public class Player extends piedpipers.sim.Player {
 		return all_at_home;
 	}
 
-	public Point move(Point[] pipers, Point[] rats) {
+	public Point move(Point[] pipers, Point[] rats, boolean[] pipermusic) {
 
 		npipers = pipers.length;
 		nrats = rats.length;

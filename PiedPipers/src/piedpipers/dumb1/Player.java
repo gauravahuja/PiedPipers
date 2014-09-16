@@ -33,7 +33,7 @@ public class Player extends piedpipers.sim.Player {
 	// my position: dogs[id-1]
 
 	public Point move(Point[] pipers, // positions of dogs
-			Point[] rats) { // positions of the sheeps
+			Point[] rats, boolean[] pipermusic) { // positions of the sheeps
 		npipers = pipers.length;
 		System.out.println(initi);
 		Point gate = new Point(dimension/2, dimension/2);

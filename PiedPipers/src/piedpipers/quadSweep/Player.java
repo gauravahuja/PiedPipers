@@ -37,7 +37,7 @@ public class Player extends piedpipers.sim.Player {
 	// my position: pipers[id]
 
 	public Point move(Point[] pipers, // positions of pipers
-			Point[] rats) { // positions of the rats
+			Point[] rats, boolean[] pipermusic) { // positions of the rats
 		npipers = pipers.length;
 		Point gate = new Point(dimension/2, dimension/2);
 		if (!initi) {
