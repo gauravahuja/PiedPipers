@@ -41,7 +41,7 @@ public class Player extends piedpipers.sim.Player {
 	
 	// The maximum number of calculations to run per Piper per turn
 	// Will skip distances evenly over range of board
-	static int MAX_DISTANCE_CALCULATIONS = 30;
+	static int MAX_DISTANCE_CALCULATIONS = 250;
 	
 	private boolean droppedOffRats = false;
 
@@ -240,7 +240,6 @@ public class Player extends piedpipers.sim.Player {
 				}
 			}
 		}
-		System.out.println("Will return ratsInRange of size " + ratsInRange.size());
 		return ratsInRange;
 	}
 	
@@ -309,13 +308,14 @@ public class Player extends piedpipers.sim.Player {
 		Point current = pipers[id];
 		double dist = distance(current, destination);
 
-		System.out.printf("[WHEREABOUT] Piper: %d, State: %d, Current: (%f, %f), Destination:(%f, %f), Dist: %f\n",
-			id,
-			current_state,
-			current.x, current.y,
-			destination.x, destination.y,
-			dist
-			);
+		// Commented out to increase speed
+//		System.out.printf("[WHEREABOUT] Piper: %d, State: %d, Current: (%f, %f), Destination:(%f, %f), Dist: %f\n",
+//			id,
+//			current_state,
+//			current.x, current.y,
+//			destination.x, destination.y,
+//			dist
+//			);
 		
 		// If chasing a target, ensure that target is still going to be there
 		if (current_state == 2) {

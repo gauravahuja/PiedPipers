@@ -27,7 +27,6 @@ public class Predict
             
             if (ratFree == true)
             {
-            	System.out.println("Ticks: " + ticks + "Dimension: " +  dimension + "Rat positions: " + ratsNow + "Thetas: " + ratThetas + "Pipers: " + pipers + "Music: " + piperMusic);
                 ratsFuture[i] = moveRat(ticks, ratsNow[i], ratThetas[i], dimension);
             }
             else
