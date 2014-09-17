@@ -8,8 +8,10 @@ public class Player extends piedpipers.sim.Player {
 	static int nrats;
 	static double PIPER_INFLUENCE = 10.0;
 	
-	static double pspeed = 0.49999;
-	static double mpspeed = 0.09999;
+	static double MIN_PIPER_SEPARATION = 40.0;
+	
+	static double pspeed = 0.4999;
+	static double mpspeed = 0.0999;
 	
 	static Point target = new Point();
 	static boolean finishround = true;
@@ -30,6 +32,12 @@ public class Player extends piedpipers.sim.Player {
 	private boolean[] piperMusic;
 	
 	private int[] thetas;
+	
+	private int targetRatIndex = 0;
+	private int targetRatTicsRemaining = 0;
+	
+	/* TURN ON AND OFF QUADRANTS */
+	static boolean USE_QUADRANTS = false;
 
 	public void init()
 	{
@@ -63,9 +71,7 @@ public class Player extends piedpipers.sim.Player {
 				for(int p = 0; p < npipers; p++)
 				{
 					distances[r] = Math.min(distance(pipers[p], rats[r]), distances[r]);
-					if (distances[r] >= PIPER_INFLUENCE) {
-						return false;
-					}
+
 				}
 			}
 			
@@ -99,16 +105,12 @@ public class Player extends piedpipers.sim.Player {
 				new_state = 2;
 				break;
 			case 2:
-				if(all_rats_mesmerized(this.pipers, this.ratsNow)) {
-					new_state = 3;
+				Point closest = getClosestPredictedRat();
+				if(closest != null) {
+					destination = closest;
+					new_state = 2;
 				} else {
-					Point closest = getClosestPredictedRat();
-					if(closest != null) {
-						destination = closest;
-						new_state = 2;
-					} else {
-						new_state = 3;
-					}
+					new_state = 3;
 				}
 				break;
 			case 3:
@@ -143,12 +145,12 @@ public class Player extends piedpipers.sim.Player {
 				music = true;
 				break;
 			case 3:
-				destination.x = dimension/2.0;
+				destination.x = dimension/2.0 + 10.0;
 				destination.y = dimension/2.0;
 				music = true;
 				break;
 			case 4:
-				destination.x = 0.0;
+				destination.x = dimension / 2.0 - 50.0;
 				destination.y = dimension / 2.0;
 				music = true;
 				break;
@@ -163,13 +165,14 @@ public class Player extends piedpipers.sim.Player {
 		// If not, checks if a rat will be within 2 m in 2 tic...
 		// Once yes, returns that rat's location
 		
-		for (int i = 1; i < dimension * 10; i++)
+		for (int i = 1; i < dimension * 10; i += 3)
 		{
 			//Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, piedpipers.sim.Piedpipers.thetas, this.pipers, this.piperMusic);
 			Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic);
 			
 			ArrayList<Point> ratsInRange = ratsInRange(this.pipers[id], i, futureRatPositions);
 			if (ratsInRange.size() > 0) {
+				this.targetRatTicsRemaining = i;
 				return ratsInRange.get(0);
 			}
 		}
@@ -183,19 +186,48 @@ public class Player extends piedpipers.sim.Player {
 		
 		for(int i = 0; i < rats.length; i++)
 		{
-			if(rats[i].x < 0 || rats[i].y < 0) {
+			if(rats[i].x < dimension / 2.0 || rats[i].y < 0) {
 				continue;
 			}
 			
 			// Check if the rat is within range of where the piper can be in "radius" ticks
-			if(helper.distance(current, rats[i]) < (radius * mpspeed) + PIPER_INFLUENCE)
+			if((helper.distance(current, rats[i]) < (radius * mpspeed) + PIPER_INFLUENCE))
 			{
-				ratsInRange.add(rats[i]);
-				return ratsInRange; // Just getting closest one for faster computation
+				if (!USE_QUADRANTS || quadrantContainsPoint(id, rats[i])) {
+					this.targetRatIndex = i;
+					ratsInRange.add(rats[i]);
+					return ratsInRange; // Just returning closest one for faster computation
+				}
 			}
 		}
 		System.out.println("Will return ratsInRange of size " + ratsInRange.size());
 		return ratsInRange;
+	}
+	
+	// Returns true if the quadrant for the piper with piperId contains point
+	public boolean quadrantContainsPoint(int piperId, Point point)
+	{
+		if (point.x < dimension / 2.0 || point.x > dimension) {
+			return false;
+		}
+		
+		double topY = quadrant_height * piperId;
+		double bottomY = topY + quadrant_height;
+		
+		return (point.y > topY && point.y < bottomY);
+	}
+	
+	// Returns true if Point is within MIN_PIPER_SEPARATION of any piper
+	public boolean withinRangeOfPiper(Point point)
+	{
+		for(int i = 0; i < this.pipers.length; i++)
+		{
+			if(helper.distance(this.pipers[i], point) < MIN_PIPER_SEPARATION) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	public Point calc_offset(Point c, Point d)
@@ -232,10 +264,8 @@ public class Player extends piedpipers.sim.Player {
 			initi = true;
 		}
 		
-		if(current_state < 3 && all_rats_mesmerized(pipers, rats)) {
-			apply_new_state(3);
-		}
-		
+		this.targetRatTicsRemaining--;
+
 		Point current = pipers[id];
 		double dist = distance(current, destination);
 
@@ -246,6 +276,14 @@ public class Player extends piedpipers.sim.Player {
 			destination.x, destination.y,
 			dist
 			);
+		
+		Point targetRatLocation = Predict.getFutureRatPositions(this.targetRatTicsRemaining, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic)[targetRatIndex];
+		
+		// If chasing a target, ensure that target is still going to be there
+		if (current_state == 2 && distance(targetRatLocation, destination) > 1.0) {
+			System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
+			apply_new_state(get_new_state());
+		}
 		
 		Point o;
 		if (dist > 0.5)
