@@ -37,7 +37,13 @@ public class Player extends piedpipers.sim.Player {
 	private int targetRatTicsRemaining = 0;
 	
 	/* TURN ON AND OFF QUADRANTS */
-	static boolean USE_QUADRANTS = false;
+	static boolean USE_QUADRANTS = true;
+	
+	// The maximum number of calculations to run per Piper per turn
+	// Will skip distances evenly over range of board
+	static int MAX_DISTANCE_CALCULATIONS = 30;
+	
+	private boolean droppedOffRats = false;
 
 	public void init()
 	{
@@ -99,7 +105,12 @@ public class Player extends piedpipers.sim.Player {
 		switch(current_state)
 		{
 			case 0:
-				new_state = 1;
+				// Check if we're going out to get stragglers
+				if(droppedOffRats) {
+					new_state = 2;
+				} else {
+					new_state = 1;
+				}
 				break;
 			case 1:
 				new_state = 2;
@@ -114,10 +125,26 @@ public class Player extends piedpipers.sim.Player {
 				}
 				break;
 			case 3:
+				droppedOffRats = true;
 				new_state = 4;
 				break;
 			case 4:
-				new_state = 4;
+				new_state = 5;
+				break;
+			case 5:
+				new_state = 6;
+				break;
+			case 6:
+				new_state = 7;
+				break;
+			case 7:
+				new_state = 7;
+				for(int i = 0; i < this.ratsNow.length; i++) {
+					if(quadrantContainsPoint(id, this.ratsNow[i])) {
+						new_state = 0;
+						break;
+					}
+				}
 				break;
 		}
 		return new_state;
@@ -144,16 +171,29 @@ public class Player extends piedpipers.sim.Player {
 				// Destination handled in get_new_state()
 				music = true;
 				break;
+				
+			// Reset cases
 			case 3:
 				destination.x = dimension/2.0 + 10.0;
 				destination.y = dimension/2.0;
 				music = true;
 				break;
 			case 4:
-				destination.x = dimension / 2.0 - 50.0;
+				destination.x = dimension / 2.0 - 10.0;
 				destination.y = dimension / 2.0;
 				music = true;
 				break;
+			case 5:
+				destination.x = dimension / 2.0 - 10.0;
+				destination.y = dimension / 2.0 + 10.0;
+				music = true;
+				break;
+			case 6:
+				destination.x = dimension / 2.0;
+				destination.y = dimension / 2.0 + 10.0;
+				music = true;
+				break;
+				
 		}
 		current_state = new_state;
 	}
@@ -165,7 +205,7 @@ public class Player extends piedpipers.sim.Player {
 		// If not, checks if a rat will be within 2 m in 2 tic...
 		// Once yes, returns that rat's location
 		
-		for (int i = 1; i < dimension * 10; i += 3)
+		for (int i = 1; i < dimension * 10; i += dimension / MAX_DISTANCE_CALCULATIONS)
 		{
 			//Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, piedpipers.sim.Piedpipers.thetas, this.pipers, this.piperMusic);
 			Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic);
@@ -277,13 +317,14 @@ public class Player extends piedpipers.sim.Player {
 			dist
 			);
 		
-		Point targetRatLocation = Predict.getFutureRatPositions(this.targetRatTicsRemaining, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic)[targetRatIndex];
-		
 		// If chasing a target, ensure that target is still going to be there
-		if (current_state == 2 && distance(targetRatLocation, destination) > 1.0) {
-			System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-			apply_new_state(get_new_state());
-		}
+		if (current_state == 2) {
+			Point targetRatLocation = Predict.getFutureRatPositions(this.targetRatTicsRemaining, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic)[targetRatIndex];
+
+			if (distance(targetRatLocation, destination) > 1.0) {
+				apply_new_state(get_new_state());
+			}
+		}		
 		
 		Point o;
 		if (dist > 0.5)
