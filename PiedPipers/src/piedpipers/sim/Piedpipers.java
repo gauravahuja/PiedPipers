@@ -658,7 +658,7 @@ public class Piedpipers {
 			Point[] pipercopy = copyPointArray(pipers);
 
 			try {
-				next[d] = players[d].move(pipercopy, rats, pipermusic);
+				next[d] = players[d].move(pipercopy, rats, pipermusic, thetas);
 				pipermusic[d] = players[d].music;
 			} catch (Exception e) {
 				e.printStackTrace();
