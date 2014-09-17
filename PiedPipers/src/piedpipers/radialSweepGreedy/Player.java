@@ -1,4 +1,4 @@
-package piedpipers.radialSweep;
+package piedpipers.radialSweepGreedy;
 
 import java.util.*;
 import piedpipers.sim.Point;

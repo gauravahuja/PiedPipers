@@ -1,4 +1,4 @@
-package piedpipers.quadSweep;
+package piedpipers.quadSweepClosest;
 
 import java.util.*;
 
@@ -74,7 +74,7 @@ public class Player extends piedpipers.sim.Player {
 		}
                 //Move onto left side to drop off rats
                 else {
-                  target = new Point(gate.x - WALK_DIST, gate.y);
+                  target = new Point(gate.x - WALK_DIST -10, gate.y);
                   if (distance(target,current) < mpspeed){
                     this.music = false;
                     droppedOff = true;
