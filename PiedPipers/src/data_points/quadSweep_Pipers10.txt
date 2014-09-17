@@ -1,0 +1,9 @@
+#Strategy: quadSweep
+#Constant: Pipers 10
+#Field   Average Ticks
+"Rats 10" "Rats 50" "Rats 100" "Rats 250" "Rats 500" 
+50 569 682 589 590 591
+100 1176 1345 1228 1241 1244
+250 4651 6654 6035 9320 9817
+500 13293 22848 26377 39443 41462
+
