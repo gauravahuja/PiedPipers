@@ -64,7 +64,7 @@ public class Player extends piedpipers.sim.Player {
                 else if (withinQuadrant(current) && freeRatsInQuadrant(rats)){
                   droppedOff = false;
                   this.music = true;
-                  target = getAverageRatCoord(rats);
+                  target = getClosestRatCoord(rats);
                   System.out.println("sweeping for rats");
                 }
                 //Head back towards gate
@@ -111,6 +111,25 @@ public class Player extends piedpipers.sim.Player {
             }
           }
           return new Point(xsum/ratcount, ysum/ratcount);
+
+        }
+
+        Point getClosestRatCoord(Point[] rats){
+          double min_dist = 2*dimension;
+          Point min_point = current;
+          for (Point rat : rats){
+            if (withinQuadrant(rat) && !canHearMusic(rat)){
+              
+              if(distance(current, rat) < min_dist)
+              {
+                min_point = rat;
+                min_dist = distance(current, rat);
+
+              }
+              
+            }
+          }
+          return min_point;
 
         }
         //Check if a rat is in our quadrant (and not under our spell)
