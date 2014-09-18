@@ -2,99 +2,139 @@ Pipers: 10
 Rats: 10
 Field: 50
 Average_Ticks: 569
+Max_Ticks: 616
+Min_Ticks: 482
 \n
 Pipers: 10
 Rats: 10
 Field: 100
 Average_Ticks: 1176
+Max_Ticks: 1417
+Min_Ticks: 1053
 \n
 Pipers: 10
 Rats: 10
 Field: 250
 Average_Ticks: 4651
+Max_Ticks: 9181
+Min_Ticks: 3088
 \n
 Pipers: 10
 Rats: 10
 Field: 500
 Average_Ticks: 13293
+Max_Ticks: 25114
+Min_Ticks: 8607
 \n
 Pipers: 10
 Rats: 50
 Field: 50
 Average_Ticks: 682
+Max_Ticks: 1064
+Min_Ticks: 553
 \n
 Pipers: 10
 Rats: 50
 Field: 100
 Average_Ticks: 1345
+Max_Ticks: 1590
+Min_Ticks: 1170
 \n
 Pipers: 10
 Rats: 50
 Field: 250
 Average_Ticks: 6654
+Max_Ticks: 16219
+Min_Ticks: 3980
 \n
 Pipers: 10
 Rats: 50
 Field: 500
 Average_Ticks: 22848
+Max_Ticks: 36191
+Min_Ticks: 14576
 \n
 Pipers: 10
 Rats: 100
 Field: 50
 Average_Ticks: 589
+Max_Ticks: 596
+Min_Ticks: 584
 \n
 Pipers: 10
 Rats: 100
 Field: 100
 Average_Ticks: 1228
+Max_Ticks: 1264
+Min_Ticks: 1195
 \n
 Pipers: 10
 Rats: 100
 Field: 250
 Average_Ticks: 6035
+Max_Ticks: 8224
+Min_Ticks: 5397
 \n
 Pipers: 10
 Rats: 100
 Field: 500
 Average_Ticks: 26377
+Max_Ticks: 37955
+Min_Ticks: 20536
 \n
 Pipers: 10
 Rats: 250
 Field: 50
 Average_Ticks: 590
+Max_Ticks: 595
+Min_Ticks: 585
 \n
 Pipers: 10
 Rats: 250
 Field: 100
 Average_Ticks: 1241
+Max_Ticks: 1261
+Min_Ticks: 1202
 \n
 Pipers: 10
 Rats: 250
 Field: 250
 Average_Ticks: 9320
+Max_Ticks: 20328
+Min_Ticks: 5974
 \n
 Pipers: 10
 Rats: 250
 Field: 500
 Average_Ticks: 39443
+Max_Ticks: 99742
+Min_Ticks: 24213
 \n
 Pipers: 10
 Rats: 500
 Field: 50
 Average_Ticks: 591
+Max_Ticks: 596
+Min_Ticks: 584
 \n
 Pipers: 10
 Rats: 500
 Field: 100
 Average_Ticks: 1244
+Max_Ticks: 1256
+Min_Ticks: 1227
 \n
 Pipers: 10
 Rats: 500
 Field: 250
 Average_Ticks: 9817
+Max_Ticks: 13726
+Min_Ticks: 6786
 \n
 Pipers: 10
 Rats: 500
 Field: 500
 Average_Ticks: 41462
+Max_Ticks: 63861
+Min_Ticks: 29542
 \n
