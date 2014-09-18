@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Set time limit for all operations
-ulimit -t 30
 
 constant="" 
 sim_output=""
@@ -13,6 +11,7 @@ pipers=0
 rats=0
 field=0
 strategy="dumb1"
+strategy_dir="piedpipers/${strategy}"
 
 #Parameter Sweeps (arbitrarily chosen by Richard)
 psweep="2 4 8 16 32"
@@ -30,21 +29,48 @@ Usage() {
     exit 1
 }
 
+ForkAndWait() {
+  for i in {1..10} ; do
+    output="result_${i}"
+    ( java "piedpipers.sim.Piedpipers" "${strategy}${i}" $1 $2 "False" "${i}" $3 1> /dev/null 2> ${output} ) &
+  done 
+  FAIL=0
+  for job in `jobs -p` ; do
+    wait $job || let "FAIL+=1"
+  done
+  if [ ! ${FAIL} -eq 0 ] ; then
+    echo "We had ${FAIL} failures!"
+    exit 1
+  fi
+}
+
 RunSim() {
-  totalticks=0
   echo "Pipers: $1" >> ${sim_output}
   echo "Rats: $2" >> ${sim_output}
   echo "Field: $3" >> ${sim_output}
   for i in {1..10} ; do
-    java "piedpipers.sim.Piedpipers" ${strategy} $1 $2 False "${i}" $3 1> /dev/null 2>> result
-    ticks=`tail -1 result | grep 'SUCCESS' | sed -r 's/[^0-9]+([0-9]+)[^0-9]+/\1/' | xargs echo`
+    cp -r "${strategy_dir}" "${strategy_dir}${i}"
+    newpackage="package piedpipers.${strategy}${i};"
+    sed -i "1 s/^.*$/${newpackage}/" "${strategy_dir}${i}/Player.java"
+  done 
+
+  #Fork 10 simulators
+  ForkAndWait $1 $2 $3
+
+  #Collect results
+
+  totalticks=0
+  for i in {1..10} ; do
+    output="result_${i}"
+    ticks=`tail -1 ${output} | grep 'SUCCESS' | sed -r 's/[^0-9]+([0-9]+)[^0-9]+/\1/' | xargs echo`
     totalticks=`expr ${ticks} + ${totalticks}`
+    rm ${output}
+    rm -r "${strategy_dir}${i}"
   done 
   totalticks=`expr "${totalticks}" / 10`
   echo "Average_Ticks: ${totalticks}" >> ${sim_output}
   echo "\n" >> ${sim_output}
   echo "Finished run with $1 $2 $3"
-  rm result
 }
 
 GetStat(){
@@ -65,6 +91,7 @@ while getopts gp:r:f:s:h c; do
             ;;
         s) # Set strategy
             strategy=$OPTARG
+            strategy_dir="piedpipers/${strategy}"
             ;;
 	p) # Set Pipers
             pipers=$OPTARG
@@ -160,7 +187,7 @@ ticks=`GetStat "${sim_output}" "Average_Ticks"`
 
 echo "#Strategy: ${strategy}" > ${stat_output}
 echo "#Constant: ${constant} ${consval}" >> ${stat_output}
-echo "#${Xaxis}   Average Ticks" >> ${stat_output}
+echo -e "#${Xaxis}   Average Ticks\n" >> ${stat_output}
 
 nextnum(){
   expr match "${1}" '\([0-9]\+\)'
@@ -194,7 +221,6 @@ for k in `seq 0 1 ${i}` ; do
 done
 
 # Generate Gnuplot script for this data
-echo ${j}
 
 #Index into gnuplot input file correctly
 j=`expr ${j} + 1`
@@ -203,7 +229,7 @@ echo "set term wxt size 700, 450" > ${gnuplot_file}
 echo "unset label          #remove any previous labels" >> ${gnuplot_file}
 echo "set xtic auto       #set xtics automatically" >> ${gnuplot_file}
 echo "set ytic auto       #set ytics automatically" >> ${gnuplot_file}
-echo "set title \"The Dependence of Average Ticks on ${Xaxis}\"" >> ${gnuplot_file}
+echo "set title \"The Dependence of Average Ticks on ${Xaxis} (holding ${constant} at a constant value of ${consval})\"" >> ${gnuplot_file}
 echo "set xlabel \"${Xaxis}\"" >> ${gnuplot_file}
 echo "set ylabel \"Average Ticks (over 10 runs)\"" >> ${gnuplot_file}
 echo "point=1.5" >> ${gnuplot_file}
