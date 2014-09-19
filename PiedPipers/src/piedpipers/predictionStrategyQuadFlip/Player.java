@@ -37,7 +37,7 @@ public class Player extends piedpipers.sim.Player {
   private int targetRatTicsRemaining = 0;
 
   /* TURN ON AND OFF QUADRANTS */
-  static boolean[] use_quad;
+  public static boolean[] use_quad;
 
   // The maximum number of calculations to run per Piper per turn
   // Will skip distances evenly over range of board
@@ -218,9 +218,9 @@ public class Player extends piedpipers.sim.Player {
     ArrayList<Point> ratsInRange = new ArrayList<Point>();
     
     if (emptyQuadrant(rats))
-      use_quad[i]=false;
+      use_quad[id] = false;
     else
-      use_quad[i]=true;
+      use_quad[id] = true;
 
     for(int i = 0; i < rats.length; i++)
     {
@@ -231,7 +231,7 @@ public class Player extends piedpipers.sim.Player {
       // Check if the rat is within range of where the piper can be in "radius" ticks
       if((helper.distance(current, rats[i]) < (radius * mpspeed) + PIPER_INFLUENCE))
       {
-        if (!use_quad[i] || quadrantContainsPoint(id, rats[i])) {
+        if (!use_quad[id] || quadrantContainsPoint(id, rats[i])) {
           this.targetRatIndex = i;
           ratsInRange.add(rats[i]);
           return ratsInRange; // Just returning closest one for faster computation
