@@ -51,7 +51,11 @@ RunSim() {
   for i in {1..10} ; do
     cp -r "${strategy_dir}" "${strategy_dir}${i}"
     newpackage="package piedpipers.${strategy}${i};"
-    sed -i "1 s/^.*$/${newpackage}/" "${strategy_dir}${i}/Player.java"
+    for file in `ls "${strategy_dir}${i}"` ; do 
+      if [ -f "${strategy_dir}${i}/${file}" ] ; then
+        sed -i "1 s/^.*$/${newpackage}/" "${strategy_dir}${i}/${file}"
+      fi
+    done
   done 
 
   #Fork 10 simulators
@@ -167,10 +171,17 @@ stat_output="${stat_output}.txt"
 
 if [ ${nosim} -eq 0 ] ; then
 
-  # Make clean file where we'll store test results
+  # Make clean files where we'll store test results
 
   > ${stat_output}
   > ${sim_output}
+  for i in `seq 1 1 10` ; do
+    if [ -d ${strategy_dir}${i} ] ; then
+      rm -r ${strategy_dir}${i}
+    fi
+  done
+
+  # Main test loop
   for piper in ${first} ; do
     for rat in ${sec} ; do
       for fields in ${third} ; do
@@ -238,4 +249,4 @@ echo 'set style line 2 pt 7 lc rgb "red"  ps point' >> ${gnuplot_file}
 echo 'set style line 3 pt 9 lc rgb "#EEB4B4" ps point' >> ${gnuplot_file}
 echo 'set style line 4 pt 13 lc rgb "blue" ps point' >> ${gnuplot_file}
 echo 'set style line 5 pt 12 lc rgb "#8C1717" ps point' >> ${gnuplot_file}
-echo "plot for [i=2:${j}] 'quadSweep_${constant}${consval}.txt'  u 1:i w linespoints ls i title columnhead(i-1)  " >> ${gnuplot_file}
+echo "plot for [i=2:${j}] '${strategy}_${constant}${consval}.txt'  u 1:i w linespoints ls i title columnhead(i-1)  " >> ${gnuplot_file}
