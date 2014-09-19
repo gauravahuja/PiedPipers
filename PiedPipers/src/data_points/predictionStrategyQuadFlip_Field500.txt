@@ -1,0 +1,11 @@
+#Strategy: predictionStrategyQuadFlip
+#Constant: Field 500
+#Rats   Average Ticks
+
+"Pipers 2" "Pipers 4" "Pipers 8" "Pipers 16" "Pipers 32" 
+10 8292 5736 5527 5517 5491
+50 14912 9203 6456 6007 6190
+100 19182 11471 7976 6067 6527
+250 27194 15314 10150 6675 6691
+500 35874 19488 11456 8270 8064
+
