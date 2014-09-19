@@ -1,0 +1,11 @@
+#Strategy: predictionStrategy
+#Constant: Field 500
+#Rats   Average Ticks
+
+"Pipers 2" "Pipers 4" "Pipers 8" "Pipers 16" "Pipers 32" 
+10 8292 5755 5505 5531 5546
+50 15197 9275 6812 6396 7080
+100 19198 11572 7817 6267 7205
+250 27702 15882 10239 7900 7352
+500 37386 20187 12294 8823 7924
+

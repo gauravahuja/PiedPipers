@@ -1,6 +1,7 @@
 #Strategy: quadSweep
 #Constant: Field 100
 #Rats   Average Ticks
+
 "Pipers 2" "Pipers 4" "Pipers 8" "Pipers 16" "Pipers 32" 
 10 1971 1127 1317 1370 1751
 50 3233 1556 1416 1555 1896

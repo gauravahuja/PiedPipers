@@ -1,0 +1,10 @@
+#Strategy: quadSweep
+#Constant: Rats 50
+#Field   Average Ticks
+
+"Pipers 2" "Pipers 4" "Pipers 8" "Pipers 16" "Pipers 32" 
+50 739 549 600 661 3778
+100 3233 1556 1416 1555 1896
+250 19387 9506 7698 6913 10496
+500 71459 29880 27011 18219 17070
+

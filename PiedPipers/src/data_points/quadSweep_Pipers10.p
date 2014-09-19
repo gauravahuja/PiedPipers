@@ -2,7 +2,7 @@ set term wxt size 700, 450
 unset label          #remove any previous labels
 set xtic auto       #set xtics automatically
 set ytic auto       #set ytics automatically
-set title "The Dependence of Average Ticks on Field"
+set title "The Dependence of Average Ticks on Field (holding Pipers at a constant value of 10)"
 set xlabel "Field"
 set ylabel "Average Ticks (over 10 runs)"
 point=1.5
