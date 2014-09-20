@@ -22,6 +22,7 @@ public class Player extends piedpipers.sim.Player {
   static double yb;
   static double yt;
   static double quadrant_height = 0;
+  static double quadrant_width = 0;
   static int current_state = 0;
   static boolean check_for_rats = false;
 
@@ -55,6 +56,7 @@ public class Player extends piedpipers.sim.Player {
     for (int i = 0; i < npipers; i++)
       use_quad[i] = true;
     quadrant_height = dimension/npipers;
+    quadrant_width = quadrant_height/2;
 
     apply_new_state(0);
 
@@ -217,10 +219,16 @@ public class Player extends piedpipers.sim.Player {
   {
     ArrayList<Point> ratsInRange = new ArrayList<Point>();
     
-    if (emptyQuadrant(rats))
+    if (emptyQuadrant(rats)){
+      if (use_quad[id])
+        System.out.println("Piper " + id + " going vertical");
       use_quad[id] = false;
-    else
+    }
+    else{
+      if (!use_quad[id])
+        System.out.println("Piper " + id + " going horizontal");
       use_quad[id] = true;
+    }
 
     for(int i = 0; i < rats.length; i++)
     {
@@ -260,7 +268,13 @@ public class Player extends piedpipers.sim.Player {
     double topY = quadrant_height * piperId;
     double bottomY = topY + quadrant_height;
 
-    return (point.y > topY && point.y < bottomY);
+    double leftX = quadrant_width * piperId + dimension/2;
+    double rightX = leftX + quadrant_width;
+
+    if (use_quad[id])
+      return (point.y > topY && point.y < bottomY);
+    else
+      return (point.x > leftX && point.x < rightX);
   }
 
   // Returns true if Point is within MIN_PIPER_SEPARATION of any piper
