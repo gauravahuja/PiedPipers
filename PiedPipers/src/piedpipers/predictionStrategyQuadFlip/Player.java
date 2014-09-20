@@ -220,13 +220,9 @@ public class Player extends piedpipers.sim.Player {
     ArrayList<Point> ratsInRange = new ArrayList<Point>();
     
     if (emptyQuadrant(rats)){
-      if (use_quad[id])
-        System.out.println("Piper " + id + " going vertical");
       use_quad[id] = false;
     }
     else{
-      if (!use_quad[id])
-        System.out.println("Piper " + id + " going horizontal");
       use_quad[id] = true;
     }
 
