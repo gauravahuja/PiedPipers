@@ -179,13 +179,13 @@ public class Player extends piedpipers.sim.Player {
 				music = true;
 				break;
 			case 4:
-				destination.x = dimension / 2.0 - 10.0;
+				destination.x = dimension / 2.0 + 10.0;
 				destination.y = dimension / 2.0;
 				music = true;
 				break;
 			case 5:
 				destination.x = dimension / 2.0 - 10.0;
-				destination.y = dimension / 2.0 + 10.0;
+				destination.y = dimension / 2.0;
 				music = true;
 				break;
 			case 6:
@@ -205,7 +205,7 @@ public class Player extends piedpipers.sim.Player {
 		// If not, checks if a rat will be within 2 m in 2 tic...
 		// Once yes, returns that rat's location
 		
-		for (int i = 1; i < dimension * 10; i += dimension / MAX_DISTANCE_CALCULATIONS)
+		for (int i = 1; i < dimension * 10; i += Math.max(dimension / MAX_DISTANCE_CALCULATIONS, 1))
 		{
 			//Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, piedpipers.sim.Piedpipers.thetas, this.pipers, this.piperMusic);
 			Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic);
@@ -309,13 +309,13 @@ public class Player extends piedpipers.sim.Player {
 		double dist = distance(current, destination);
 
 		// Commented out to increase speed
-//		System.out.printf("[WHEREABOUT] Piper: %d, State: %d, Current: (%f, %f), Destination:(%f, %f), Dist: %f\n",
-//			id,
-//			current_state,
-//			current.x, current.y,
-//			destination.x, destination.y,
-//			dist
-//			);
+		System.out.printf("[WHEREABOUT] Piper: %d, State: %d, Current: (%f, %f), Destination:(%f, %f), Dist: %f\n",
+			id,
+			current_state,
+			current.x, current.y,
+			destination.x, destination.y,
+			dist
+			);
 		
 		// If chasing a target, ensure that target is still going to be there
 		if (current_state == 2) {
