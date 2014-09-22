@@ -8,7 +8,7 @@ public class Player extends piedpipers.sim.Player {
   static int nrats;
   static double PIPER_INFLUENCE = 10.0;
 
-  static double MIN_PIPER_SEPARATION = 40.0;
+  static double MIN_PIPER_SEPARATION = 10.0;
 
   static double pspeed = 0.4999;
   static double mpspeed = 0.0999;
@@ -38,7 +38,7 @@ public class Player extends piedpipers.sim.Player {
   private int targetRatTicsRemaining = 0;
 
   /* TURN ON AND OFF QUADRANTS */
-  public static boolean[] use_quad;
+  public static boolean use_quad;
 
   // The maximum number of calculations to run per Piper per turn
   // Will skip distances evenly over range of board
@@ -52,9 +52,7 @@ public class Player extends piedpipers.sim.Player {
   }
 
   public void init_me() {
-    use_quad = new boolean[npipers];
-    for (int i = 0; i < npipers; i++)
-      use_quad[i] = true;
+    use_quad = true;
     quadrant_height = dimension/npipers;
     quadrant_width = quadrant_height/2;
 
@@ -111,23 +109,27 @@ public class Player extends piedpipers.sim.Player {
     {
       case 0:
         // Check if we're going out to get stragglers
-        if(droppedOffRats) {
-          new_state = 2;
-        } else {
-          new_state = 1;
-        }
+        new_state = 1;
         break;
       case 1:
         new_state = 2;
         break;
       case 2:
+        if (emptyQuadrant(this.ratsNow))
+          use_quad = false;
+        if (!use_quad){
+          use_quad = true;
+          if (emptyQuadrant(this.ratsNow))
+            use_quad = false;
+        }
         Point closest = getClosestPredictedRat();
         if(closest != null) {
           destination = closest;
           new_state = 2;
-        } else {
-          new_state = 3;
         }
+        else {
+            new_state = 3;
+        } 
         break;
       case 3:
         droppedOffRats = true;
@@ -161,9 +163,9 @@ public class Player extends piedpipers.sim.Player {
         music = false;
         break;
       case 1:
-        // Target initial positions on the right side
-        destination.x = dimension - PIPER_INFLUENCE;
-        destination.y = PIPER_INFLUENCE + ((dimension - PIPER_INFLUENCE * 2.0) / (npipers - 1)) * id;
+        // Target gate at the beginning
+        destination.x = dimension - MIN_PIPER_SEPARATION;
+        destination.y = (quadrant_height * id) + quadrant_height/2;
         music = false;
         break;
       case 2:
@@ -200,14 +202,16 @@ public class Player extends piedpipers.sim.Player {
     // If not, checks if a rat will be within 2 m in 2 tic...
     // Once yes, returns that rat's location
 
-    for (int i = 1; i < dimension * 10; i += dimension / MAX_DISTANCE_CALCULATIONS)
+    int cur_tick = 1;
+
+    for (; cur_tick < dimension * 10; cur_tick += 1 )
     {
       //Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, piedpipers.sim.Piedpipers.thetas, this.pipers, this.piperMusic);
-      Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic);
+      Point[] futureRatPositions = Predict.getFutureRatPositions(cur_tick, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic);
 
-      ArrayList<Point> ratsInRange = ratsInRange(this.pipers[id], i, futureRatPositions);
+      ArrayList<Point> ratsInRange = ratsInRange(this.pipers[id], cur_tick, futureRatPositions);
       if (ratsInRange.size() > 0) {
-        this.targetRatTicsRemaining = i;
+        this.targetRatTicsRemaining = cur_tick;
         return ratsInRange.get(0);
       }
     }
@@ -219,12 +223,6 @@ public class Player extends piedpipers.sim.Player {
   {
     ArrayList<Point> ratsInRange = new ArrayList<Point>();
     
-    if (emptyQuadrant(rats)){
-      use_quad[id] = false;
-    }
-    else{
-      use_quad[id] = true;
-    }
 
     for(int i = 0; i < rats.length; i++)
     {
@@ -235,7 +233,7 @@ public class Player extends piedpipers.sim.Player {
       // Check if the rat is within range of where the piper can be in "radius" ticks
       if((helper.distance(current, rats[i]) < (radius * mpspeed) + PIPER_INFLUENCE))
       {
-        if (!use_quad[id] || quadrantContainsPoint(id, rats[i])) {
+        if (!use_quad || quadrantContainsPoint(id, rats[i])) {
           this.targetRatIndex = i;
           ratsInRange.add(rats[i]);
           return ratsInRange; // Just returning closest one for faster computation
@@ -264,13 +262,7 @@ public class Player extends piedpipers.sim.Player {
     double topY = quadrant_height * piperId;
     double bottomY = topY + quadrant_height;
 
-    double leftX = quadrant_width * piperId + dimension/2;
-    double rightX = leftX + quadrant_width;
-
-    if (use_quad[id])
-      return (point.y > topY && point.y < bottomY);
-    else
-      return (point.x > leftX && point.x < rightX);
+    return (point.y > topY && point.y < bottomY);
   }
 
   // Returns true if Point is within MIN_PIPER_SEPARATION of any piper
@@ -326,19 +318,19 @@ public class Player extends piedpipers.sim.Player {
     Point current = pipers[id];
     double dist = distance(current, destination);
 
-    //		System.out.printf("[WHEREABOUT] Piper: %d, State: %d, Current: (%f, %f), Destination:(%f, %f), Dist: %f\n",
-    //			id,
-    //			current_state,
-    //			current.x, current.y,
-    //			destination.x, destination.y,
-    //			dist
-    //			);
+    		//System.out.printf("[WHEREABOUT] Piper: %d, State: %d, Current: (%f, %f), Destination:(%f, %f), Dist: %f\n",
+    		//	id,
+    		//	current_state,
+    		//	current.x, current.y,
+    		//	destination.x, destination.y,
+    		//	dist
+    		//	);
 
     // If chasing a target, ensure that target is still going to be there
     if (current_state == 2) {
       Point targetRatLocation = Predict.getFutureRatPositions(this.targetRatTicsRemaining, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic)[targetRatIndex];
 
-      if (distance(targetRatLocation, destination) > 1.0) {
+      if (distance(targetRatLocation, destination) > 1.0 ) {
         apply_new_state(get_new_state());
         o = calc_offset(current, destination);
         current.x += o.x;
