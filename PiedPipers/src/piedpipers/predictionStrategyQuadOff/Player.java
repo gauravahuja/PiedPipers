@@ -142,6 +142,7 @@ public class Player extends piedpipers.sim.Player {
         }
         break;
     }
+    System.out.println("New State is " + new_state);
     return new_state;
   }
 
@@ -195,7 +196,7 @@ public class Player extends piedpipers.sim.Player {
     // If not, checks if a rat will be within 2 m in 2 tic...
     // Once yes, returns that rat's location
 
-    for (int i = 1; i < dimension * 10; i += dimension / MAX_DISTANCE_CALCULATIONS)
+    for (int i = 1; i < dimension * 10; i ++)
     {
       //Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, piedpipers.sim.Piedpipers.thetas, this.pipers, this.piperMusic);
       Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic);
@@ -321,8 +322,11 @@ public class Player extends piedpipers.sim.Player {
 
     // If chasing a target, ensure that target is still going to be there
     if (current_state == 2) {
+      System.out.println("About to ensure target still there");
       Point targetRatLocation = Predict.getFutureRatPositions(this.targetRatTicsRemaining, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic)[targetRatIndex];
 
+
+      System.out.println("Finished Ensuring");
       if (distance(targetRatLocation, destination) > 1.0) {
         apply_new_state(get_new_state());
         o = calc_offset(current, destination);
