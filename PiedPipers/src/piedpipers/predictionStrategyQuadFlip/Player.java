@@ -115,8 +115,9 @@ public class Player extends piedpipers.sim.Player {
         new_state = 2;
         break;
       case 2:
-        if (emptyQuadrant(this.ratsNow))
+        if (emptyQuadrant(this.ratsNow)){
           use_quad = false;
+        }
         if (!use_quad){
           use_quad = true;
           if (emptyQuadrant(this.ratsNow))
@@ -203,8 +204,9 @@ public class Player extends piedpipers.sim.Player {
     // Once yes, returns that rat's location
 
     int cur_tick = 1;
+    int tick_increment = 1;
 
-    for (; cur_tick < dimension * 10; cur_tick += 1 )
+    for (; cur_tick < dimension * 10; cur_tick += tick_increment )
     {
       //Point[] futureRatPositions = Predict.getFutureRatPositions(i, dimension, this.ratsNow, piedpipers.sim.Piedpipers.thetas, this.pipers, this.piperMusic);
       Point[] futureRatPositions = Predict.getFutureRatPositions(cur_tick, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic);
@@ -214,6 +216,11 @@ public class Player extends piedpipers.sim.Player {
         this.targetRatTicsRemaining = cur_tick;
         return ratsInRange.get(0);
       }
+      //If our quadrant is empty in the next tick_increment, increase tick_increment to look further into
+      //the future, faster //TODO: TEST THIS AGAINST NOT DOING A CHECK AGAINST EMPTINESS
+      if (cur_tick > 20 && emptyQuadrant(futureRatPositions)){ //TODO: TEST TO FIND NUMBER TO REPLACE 20
+        tick_increment += tick_increment;//TODO: TEST TO SEE IF WE SHOULD INCREMENT TICK BY MORE THAN ITSELF
+      }
     }
 
     return null;
@@ -222,6 +229,7 @@ public class Player extends piedpipers.sim.Player {
   private ArrayList<Point> ratsInRange(Point current, int radius, Point[] rats)
   {
     ArrayList<Point> ratsInRange = new ArrayList<Point>();
+    double rat_distance;
     
 
     for(int i = 0; i < rats.length; i++)
@@ -229,11 +237,12 @@ public class Player extends piedpipers.sim.Player {
       if(rats[i].x < dimension / 2.0 || rats[i].y < 0) {
         continue;
       }
+      rat_distance = helper.distance(current,rats[i]);
 
       // Check if the rat is within range of where the piper can be in "radius" ticks
-      if((helper.distance(current, rats[i]) < (radius * mpspeed) + PIPER_INFLUENCE))
+      if(rat_distance < (radius * mpspeed) + PIPER_INFLUENCE)
       {
-        if (!use_quad || quadrantContainsPoint(id, rats[i])) {
+        if ((!use_quad && rat_distance > PIPER_INFLUENCE) || quadrantContainsPoint(id, rats[i])) {
           this.targetRatIndex = i;
           ratsInRange.add(rats[i]);
           return ratsInRange; // Just returning closest one for faster computation
@@ -243,11 +252,31 @@ public class Player extends piedpipers.sim.Player {
     return ratsInRange;
   }
 
+  public int getHighestPiperCloseTo(Point point,int radius){
+    for (int i = npipers-1; i > -1; i--)
+      if (withinRangeOfPiper(i,point,radius))
+        return i;
+    return -1;
+  }
+
+  public boolean withinRangeOfMultiplePipers( Point point, int radius){
+    int count = 0;
+    for (int i = 0; i < npipers; i ++){
+      if (withinRangeOfPiper(i,point,radius))
+        count++;
+      if (count >= 2)
+        return true;
+    }
+    return false;
+    
+  }
+
   //Return true if this piper's quadrant doesn't have any free rats
   public boolean emptyQuadrant(Point[] rats){
     for (int i = 0; i < rats.length; i++){
-      if (quadrantContainsPoint(id, rats[i]) && !withinRangeOfPiper(rats[i]))
+      if (quadrantContainsPoint(id, rats[i]) && !withinRangeOfPiper(rats[i])){
         return false;
+      }
     }
     return true;
   }
@@ -274,7 +303,14 @@ public class Player extends piedpipers.sim.Player {
         return true;
       }
     }
+    return false;
+  }
 
+  // Returns true if Point is within MIN_PIPER_SEPARATION of a given piper
+  public boolean withinRangeOfPiper(int pid, Point point, int radius)
+  {
+    if(helper.distance(this.pipers[pid], point) < (radius * mpspeed) + MIN_PIPER_SEPARATION) 
+        return true;
     return false;
   }
 
@@ -329,7 +365,6 @@ public class Player extends piedpipers.sim.Player {
     // If chasing a target, ensure that target is still going to be there
     if (current_state == 2) {
       Point targetRatLocation = Predict.getFutureRatPositions(this.targetRatTicsRemaining, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic)[targetRatIndex];
-
       if (distance(targetRatLocation, destination) > 1.0 ) {
         apply_new_state(get_new_state());
         o = calc_offset(current, destination);
