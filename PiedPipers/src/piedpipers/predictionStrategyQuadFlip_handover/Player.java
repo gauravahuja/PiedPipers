@@ -14,20 +14,11 @@ public class Player extends piedpipers.sim.Player {
   static double mpspeed = 0.0999;
 
   static Point target = new Point();
-  static boolean finishround = true;
   static boolean initi = false;
 
-  static double xl;
-  static double xr;
-  static double yb;
-  static double yt;
   static double quadrant_height = 0;
-  static double quadrant_width = 0;
   static int current_state = 0;
-  static boolean check_for_rats = false;
-
   static final int FURTHEST_RAT_STATE = 1;
-
 
   static Point destination = new Point();
 
@@ -43,12 +34,6 @@ public class Player extends piedpipers.sim.Player {
   /* TURN ON AND OFF QUADRANTS */
   public static boolean use_quad;
 
-  // The maximum number of calculations to run per Piper per turn
-  // Will skip distances evenly over range of board
-  static int MAX_DISTANCE_CALCULATIONS = 250;
-
-  private boolean droppedOffRats = false;
-
   public void init()
   {
 
@@ -57,13 +42,9 @@ public class Player extends piedpipers.sim.Player {
   public void init_me() {
     use_quad = true;
     quadrant_height = dimension/npipers;
-    quadrant_width = quadrant_height/2;
 
     apply_new_state(0);
 
-    System.out.printf("Intializing Piper: %d\n", id);
-    System.out.println("Quadrant Height: " + quadrant_height);	
-    System.out.printf("(xl=%f, yt=%f)->(xr=%f, yb=%f)\n", xl, yt, xr, yb);
   }
 
   static double distance(Point a, Point b) {
@@ -76,7 +57,6 @@ public class Player extends piedpipers.sim.Player {
     switch(current_state)
     {
       case 0:
-        // Check if we're going out to get stragglers
         new_state = 100;
         break;
       case 100:
@@ -96,7 +76,6 @@ public class Player extends piedpipers.sim.Player {
         } 
         break;
       case 3:
-        droppedOffRats = true;
         new_state = 4;
         break;
       case 4:
@@ -127,14 +106,13 @@ public class Player extends piedpipers.sim.Player {
         music = false;
         break;
       case 100:
+        //Squeeze a bit past the gate to avoid illegal moves through the fence
         destination.x = dimension/2+2;
         destination.y = dimension/2;
         music = false;
         break;
       case 1:
-        // Target gate at the beginning
-        // destination.x = dimension - MIN_PIPER_SEPARATION;
-        // destination.y = (quadrant_height * id) + quadrant_height/2;
+        //Go to furthest predicted rat postion
         current_state = new_state;
         music = false;
         Point new_d = getFurthestPredictedRat();
@@ -154,7 +132,6 @@ public class Player extends piedpipers.sim.Player {
           destination = new_d;
         }
         
-        //System.out.printf("CASE 1 Piper: %d, destination: %f, %f\n:", id, destination.x, destination.y);
         break;
       case 2:
         // Target closest predicted rat
@@ -188,14 +165,20 @@ public class Player extends piedpipers.sim.Player {
     // Returns furthest predicted rat within a quadrant
     // Used to determine starting location of a piper in a game.
 
-    //How many ticks does it take to get to far right?
-    // Point rightmost = new Point();
-    // rightmost.x = dimension - MIN_PIPER_SEPARATION;
-    // rightmost.y = quadrant_height * id + quadrant_height/2;
 
-    int cur_tick = (int) ((double)dimension/(1.414*pspeed));
 
-    //System.out.println("It will take " + cur_tick + " ticks to get " + distance(gate,rightmost) + "m away");
+    double ROOT_2 = 1.414;
+    Point rightmost = new Point();
+    Point gate = destination;//where we are now
+    rightmost.x = dimension - MIN_PIPER_SEPARATION;
+    rightmost.y = quadrant_height * id + quadrant_height/2;
+
+    //If we're using quadrants, go to futhest rat from gate
+    int cur_tick = (int) (distance(gate,rightmost) / pspeed);
+
+    if (!use_quad)
+      //Otherwise, just start looking as far across field as possible
+      cur_tick = (int) (dimension/(pspeed * ROOT_2));
 
     //Keep track of furthest rat we find
     Point max_Rat = null;
@@ -207,25 +190,18 @@ public class Player extends piedpipers.sim.Player {
       Point[] futureRatPositions = Predict.getFutureRatPositions(cur_tick, dimension, this.ratsNow, this.thetas, this.pipers, this.piperMusic);
 
       ArrayList<Point> ratsInRange = ratsInRange(this.pipers[id], cur_tick, futureRatPositions);
-      //System.out.printf("[Furthest] Piper: %d, State: %d, Tick: %d,  Rats found: %d\n", id, current_state, cur_tick, ratsInRange.size());
       if (ratsInRange.size() > 0){
         for (int i = 0; i < ratsInRange.size() ; i ++){
           double d = distance(ratsInRange.get(i),this.pipers[id]);
           if (d > max_distance){ 
             max_Rat = ratsInRange.get(i);
             max_distance = d;
-            //System.out.printf("[Furthest] Piper:%d, Max_distance: %f, Max Rat (%f, %f)\n", id, max_distance, max_Rat.x, max_Rat.y);
           }
         }
         break;
       }
     }
-    //System.out.println("Piper " +id + " is going " + cur_tick * pspeed +" distance to point " + max_Rat.x + ", " + max_Rat.y);
     this.targetRatTicsRemaining = cur_tick;
-    // if (max_Rat == null)
-    // {
-    //   System.out.printf("[Furthest] Piper:%d, State:%d, Returning null\n", id, current_state);
-    // }
     return max_Rat;
 
     
@@ -281,7 +257,6 @@ public class Player extends piedpipers.sim.Player {
       speed = mpspeed;
     else
       speed = pspeed;
-    //System.out.println("Can be at " + (radius * speed) + PIPER_INFLUENCE +" going at a speed of " + speed);
     
 
     for(int i = 0; i < rats.length; i++)
@@ -298,7 +273,6 @@ public class Player extends piedpipers.sim.Player {
           this.targetRatIndex = i;
           ratsInRange.add(rats[i]);
           if (current_state != FURTHEST_RAT_STATE){
-            //System.out.printf("[Furthest] Current state is %d\n", current_state);
             return ratsInRange; // Just returning closest one for faster computation
           }
         }
@@ -435,9 +409,7 @@ public class Player extends piedpipers.sim.Player {
       }
       if (min_distance < PIPER_INFLUENCE - 3)
       {
-        //System.out.printf("[HANDOVER] Triggering Handover\n");
         apply_new_state(1);
-        //System.out.printf("[HANDOVER] Piper: %d, State: %d, handing over, current(%f, %f), destination(%f, %f)\n", id, current_state, current.x, current.y, destination.x, destination.y);
         o = calc_offset(current, destination);
         current.x += o.x;
         current.y += o.y; 
