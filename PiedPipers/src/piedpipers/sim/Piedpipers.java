@@ -28,7 +28,7 @@ public class Piedpipers {
 	static boolean recompile = true;
 
 	// print more details?
-	static boolean verbose = true;
+	static boolean verbose = false;
 
 	// Step by step trace
 	static boolean trace = true;
@@ -391,8 +391,8 @@ public class Piedpipers {
 			}
 			}
 		public void drawCircle(Graphics2D g2, Point p, PType type) {
-			Ellipse2D eOuter = new Ellipse2D.Double(p.x * s - (WALK_DIST * s) / 2 + ox, p.y
-					* s - (WALK_DIST * s) / 2 + oy, WALK_DIST * s, WALK_DIST * s);
+			Ellipse2D eOuter = new Ellipse2D.Double(p.x * s - (WALK_DIST * s) + ox, p.y
+					* s - (WALK_DIST * s) + oy  , 2 * WALK_DIST * s, 2 * WALK_DIST * s);
 			Ellipse2D eInner = new Ellipse2D.Double(p.x * s - (STOP_DIST * s) / 2 + ox, p.y
 					* s - (STOP_DIST * s) / 2 + oy, STOP_DIST * s, STOP_DIST * s);
 			g2.setStroke(stroke);
